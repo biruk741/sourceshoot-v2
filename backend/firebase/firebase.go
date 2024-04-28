@@ -3,12 +3,12 @@ package firebase
 import (
 	"context"
 	"log"
+	"os"
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
+	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
-
-	config2 "backend/config"
 )
 
 var App *firebase.App
@@ -19,14 +19,19 @@ var FirebaseAuth *auth.Client
 func InitFirebase() error {
 	var err error
 
-	config, err := config2.LoadConfig()
+	// Load environment variables from .env file
+	err = godotenv.Load()
 	if err != nil {
-		return err
+		log.Fatalf("Error loading .env file")
+	}
+
+	config := &firebase.Config{
+		ProjectID: os.Getenv("FIREBASE_PROJECT_ID"),
 	}
 
 	ctx := context.Background()
-	opt := option.WithCredentialsFile(config.FirebaseConfigDir)
-	App, err = firebase.NewApp(ctx, nil, opt)
+	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CREDENTIALS")))
+	App, err = firebase.NewApp(ctx, config, opt)
 	if err != nil {
 		log.Fatalf("Error initializing Firebase app: %v\n", err)
 	}

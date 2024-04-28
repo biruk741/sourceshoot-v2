@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+
+  db:
+    image: mysql:8.0.17
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: sourceshoot
+      MYSQL_DATABASE: sourceshoot
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  sourceshoot_backend:
+    build: .
+    container_name: sourceshoot-backend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - "db"
+    restart: always
+
+volumes:
+  dbdata:

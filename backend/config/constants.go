@@ -1,0 +1,4 @@
+package config
+
+const ENVIRONMENT_LOCAL = "LOCAL"
+const ENVIRONMENT_PRODUCTION = "PRODUCTION"

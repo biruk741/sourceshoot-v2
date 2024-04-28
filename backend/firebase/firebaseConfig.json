@@ -1,7 +1,6 @@
 {
   "type": "service_account",
   "project_id": "sourceshoot-443ad",
-  "private_key_id": "53915165440437814bf8edd9c388ceb0c88ab7e5",
   "client_email": "firebase-adminsdk-xzeg8@sourceshoot-443ad.iam.gserviceaccount.com",
   "client_id": "111858573247259247644",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",

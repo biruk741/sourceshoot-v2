@@ -35,7 +35,7 @@ func (s *UserServiceInstance) CreateFirebaseUser(firebaseID string) (uint, error
 }
 
 func (s *UserServiceInstance) GetAppropriateLoggedInUser(firebaseID string) (*types.LoggedInUserResponse, error) {
-	user, err := repo.GetUserByFirebaseIDinDB(firebaseID)
+	user, err := s.UserRepo.GetUserByFirebaseIDinDB(firebaseID)
 	if err != nil {
 		return nil, fmt.Errorf("GetUserByFirebaseIDinDB: %w", err)
 	} else if user == nil {

@@ -37,8 +37,7 @@ func (s *IndustryInstance) GetAllIndustries() ([]models.Industry, error) {
 
 func ConvertGormIndustryToServiceIndustry(i models.Industry) serviceTypes.Industry {
 	return serviceTypes.Industry{
-		IndustryID:   i.IndustryID,
-		IndustryName: i.IndustryName,
-		Description:  i.Description,
+		IndustryID:   i.ID,
+		IndustryName: i.Name,
 	}
 }

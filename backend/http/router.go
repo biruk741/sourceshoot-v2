@@ -83,63 +83,69 @@ func InitRoutes() *gin.Engine {
 		userRepo     = repo.NewUserRepo()
 		skillRepo    = repo.NewSkillRepo()
 		industryRepo = repo.NewIndustryRepo()
-		reviewRepo   = repo.NewReviewRepo()
+		// reviewRepo   = repo.NewReviewRepo()
 	)
 
 	var (
 		userService     = services.NewUserService(userRepo)
 		skillService    = services.NewSkillService(skillRepo)
 		industryService = services.NewIndustryService(industryRepo)
-		reviewService   = services.NewReviewService(reviewRepo)
+		// reviewService   = services.New
 	)
 
+	h := handlers.Handler{
+		UserService:     userService,
+		SkillsService:   skillService,
+		IndustryService: industryService,
+	}
+
 	v1 := router.Group("/v1")
-	setV1Routes(v1)
+	setV1Routes(v1, h)
 
 	userRoutes := v1.Group("/user")
 	userRoutes.Use(AuthMiddleware())
-	setV1AuthenticatedUserRoutes(userRoutes)
+	setV1AuthenticatedUserRoutes(userRoutes, h)
 
 	workerRoutes := v1.Group("/worker")
 	workerRoutes.Use(AuthMiddleware())
-	setV1AuthenticatedWorkerRoutes(workerRoutes)
+	setV1AuthenticatedWorkerRoutes(workerRoutes, h)
 
 	businessRoutes := v1.Group("/business")
 	businessRoutes.Use(AuthMiddleware())
-	setV1AuthenticatedBusinessRoutes(businessRoutes)
+	setV1AuthenticatedBusinessRoutes(businessRoutes, h)
 
 	jobListingRoutes := v1.Group("/joblistings")
 	jobListingRoutes.Use(AuthMiddleware())
-	setV1AuthenticatedJobListingRoutes(jobListingRoutes)
+	setV1AuthenticatedJobListingRoutes(jobListingRoutes, h)
 
 	return router
 }
 
-func setV1Routes(v1 *gin.RouterGroup) {
-	v1.GET("/skills", handlers.HandleGetSkills)
-	v1.GET("/industries", handlers.HandleGetIndustries)
+func setV1Routes(v1 *gin.RouterGroup, h handlers.Handler) {
+	v1.GET("/skills", h.HandleGetSkills)
+	v1.GET("/industries", h.HandleGetIndustries)
 }
 
 /* /v1/user/ */
-func setV1AuthenticatedUserRoutes(v1User *gin.RouterGroup) {
-	v1User.POST("", handlers.HandleCreateUser)
-	v1User.GET("", handlers.HandleGetLoggedInUser)
-	v1User.POST("/firebaseSignUp", handlers.HandleFirebaseSignUp)
-	v1User.GET("/firebaseSignIn", handlers.HandleFirebaseSignIn)
+func setV1AuthenticatedUserRoutes(v1User *gin.RouterGroup, h handlers.Handler) {
+	v1User.POST("", h.HandleCreateUser)
+	v1User.GET("", h.HandleGetLoggedInUser)
+	v1User.POST("/firebaseSignUp", h.HandleFirebaseSignUp)
+	v1User.GET("/firebaseSignIn", h.HandleFirebaseSignIn)
 }
 
 /* /v1/worker/ */
-func setV1AuthenticatedWorkerRoutes(v1Worker *gin.RouterGroup) {
+func setV1AuthenticatedWorkerRoutes(v1Worker *gin.RouterGroup, h handlers.Handler) {
 
 }
 
 /* /v1/business/ */
-func setV1AuthenticatedBusinessRoutes(v1Business *gin.RouterGroup) {
+func setV1AuthenticatedBusinessRoutes(v1Business *gin.RouterGroup, h handlers.Handler) {
 
 }
 
 /* /v1/joblistings/ */
-func setV1AuthenticatedJobListingRoutes(v1JobListings *gin.RouterGroup) {
+func setV1AuthenticatedJobListingRoutes(v1JobListings *gin.RouterGroup, h handlers.Handler) {
 
 }
 

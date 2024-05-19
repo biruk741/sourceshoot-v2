@@ -9,7 +9,6 @@ import (
 
 	"backend/data"
 	"backend/data/models"
-	"backend/data/repo"
 )
 
 type PopulateFunc func(db *gorm.DB, numData *int, args ...interface{}) error
@@ -31,7 +30,6 @@ var PopulationsAndAmounts = []PopulateFuncAndAmount{
 	{populateWorkers, 10, nil},
 	{populateUsers, 10, nil},
 	{populateIndustries, 20, nil},
-	{Func: populateBusinessJobListings, Amount: 100},
 	{Func: populateBusinesses, Amount: 20},
 	{Func: PopulateReviews, Amount: 10},
 	{Func: PopulateShiftsForWorkerAndBusiness, Amount: 20, args: []interface{}{1, 3}},
@@ -104,14 +102,6 @@ func populateWorkers(db *gorm.DB, numWorkers *int, _ ...interface{}) error {
 			UserID:    uint(i),
 			FirstName: gofakeit.FirstName(),
 			LastName:  gofakeit.LastName(),
-			DOB:       gofakeit.Date().UTC(),
-			ResumeURL: gofakeit.URL(),
-			Bio:       gofakeit.Paragraph(3, 5, 50, "\n"),
-			Age:       uint(gofakeit.Number(18, 65)),
-			Rating:    gofakeit.Float32Range(1.0, 5.0),
-			WorkType:  models.WorkType(models.FULL_TIME),
-			MinPay:    gofakeit.Float32Range(10.0, 50.0),
-			SSN:       gofakeit.SSN(),
 			// IndustryID: uint(gofakeit.IntRange(0, 10)),
 		}
 
@@ -156,8 +146,7 @@ func populateIndustries(db *gorm.DB, numIndustries *int, args ...interface{}) er
 
 	for i := 0; i < len(industries); i++ {
 		industry := models.Industry{
-			IndustryName: industries[i],
-			Description:  gofakeit.Sentence(5),
+			Name: industries[i],
 		}
 
 		// Create a new Industry record in the database
@@ -177,76 +166,16 @@ func populateBusinesses(db *gorm.DB, numBusinesses *int, args ...interface{}) er
 		numBusinesses = &defaultNum
 	}
 
+	lastLogin := gofakeit.DateRange(time.Now().AddDate(0, 0, -30), time.Now())
+
 	for i := 0; i < *numBusinesses; i++ {
 		b := models.Business{
-			UserID:              uint(gofakeit.IntRange(2, 4)),
-			BusinessName:        gofakeit.Company(),
-			BusinessPhoneNumber: gofakeit.Phone(),
-			EIN:                 gofakeit.SSN(),
-			LastLogin:           gofakeit.DateRange(time.Now().AddDate(0, 0, -30), time.Now()),
-			Rating:              gofakeit.Float32Range(1.0, 5.0),
-			NumEmployees:        uint(gofakeit.IntRange(1, 100)),
-			BusinessAddress: models.Address{
-				Street:  gofakeit.Street(),
-				Street2: gofakeit.Street(),
-				City:    gofakeit.City(),
-				State:   gofakeit.State(),
-				ZipCode: gofakeit.Zip(),
-			},
-			// IndustryID:  uint(gofakeit.IntRange(0, 10)),
-			Description: gofakeit.SentenceSimple(),
+			UserID:    uint(gofakeit.IntRange(2, 4)),
+			LastLogin: &lastLogin,
 		}
 
 		// Create a new Industry record in the database
 		if err := db.Create(&b).Error; err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func populateBusinessJobListings(db *gorm.DB, numListings *int, args ...interface{}) error {
-	gofakeit.Seed(MOCK_SEED)
-
-	if numListings == nil {
-		defaultNum := 20 // Increase the default number to 20
-		numListings = &defaultNum
-	}
-
-	for i := 0; i < *numListings; i++ {
-		desc := gofakeit.LoremIpsumSentence(10)
-		lat, err := gofakeit.LatitudeInRange(44.47, 45.42)
-		if err != nil {
-			return err
-		}
-		long, err := gofakeit.LongitudeInRange(-94.01, -92.73)
-		if err != nil {
-			return err
-		}
-		address := gofakeit.Address()
-		listing := models.BusinessJobListing{
-			BusinessID:         uint(i),
-			ListingTitle:       gofakeit.JobTitle(),
-			ListingDescription: &desc,
-			PayType:            models.Hourly,
-			Location: data.GeoLocation{
-				Latitude:  lat,
-				Longitude: long,
-			},
-			Address: data.Address{
-				Street:  address.Street,
-				Street2: address.Street,
-				City:    address.City,
-				State:   address.State,
-				ZipCode: address.Zip,
-			},
-			PayAmount:    uint(gofakeit.Float32Range(10.0, 50.0)),
-			DeadlineDate: gofakeit.DateRange(time.Now(), time.Now().AddDate(0, 0, 30)),
-		}
-
-		// Create a new Industry record in the database
-		if err := db.Create(&listing).Error; err != nil {
 			return err
 		}
 	}
@@ -285,13 +214,12 @@ func PopulateShiftsForWorkerAndBusiness(db *gorm.DB, numShifts *int, args ...int
 	fmt.Printf("WorkerID: %d, BusinessID: %d, NumShifts: %d\n", workerID, businessID, numShifts)
 	for i := 0; i < *numShifts; i++ {
 		shift := models.Shift{
-			StartTime: gofakeit.DateRange(time.Now().AddDate(0, 0, -30), time.Now().AddDate(0, 0, 30)),
-			EndTime:   gofakeit.Date(),
+			StartDate: gofakeit.DateRange(time.Now().AddDate(0, 0, -30), time.Now().AddDate(0, 0, 30)),
+			EndDate:   gofakeit.Date(),
 			PaymentRate: models.PaymentRate{
 				PayAmount: gofakeit.Float64Range(10.0, 50.0),
 				PayType:   models.Hourly,
 			},
-			BusinessID: uint(businessID),
 		}
 
 		if err := db.Create(&shift).Error; err != nil {
@@ -318,7 +246,6 @@ func PopulateShiftsForWorkerAndBusiness(db *gorm.DB, numShifts *int, args ...int
 func PopulateReviews(db *gorm.DB, numData *int, args ...interface{}) error {
 	var workers []models.Worker
 	var businesses []models.Business
-	var privateParties []models.PrivateParty
 
 	// Retrieve all workers, businesses, and private parties for the review population.
 	if err := db.Find(&workers).Error; err != nil {
@@ -327,20 +254,12 @@ func PopulateReviews(db *gorm.DB, numData *int, args ...interface{}) error {
 	if err := db.Find(&businesses).Error; err != nil {
 		return err
 	}
-	if err := db.Find(&privateParties).Error; err != nil {
-		return err
-	}
 
-	if len(workers) == 0 || (len(businesses) == 0 && len(privateParties) == 0) {
+	if len(workers) == 0 || (len(businesses) == 0) {
 		return fmt.Errorf("not enough workers, businesses, or private parties to create reviews")
 	}
 
 	for i := 0; i < *numData; i++ {
-		// Randomly pick a worker to review.
-		worker := workers[gofakeit.Number(0, len(workers)-1)]
-
-		// Randomly decide if a business or private party is leaving the review.
-		isBusinessReviewer := true
 
 		review := models.Review{
 			Score:    gofakeit.Float32Range(0, 5), // Generate a random score between 0 and 5.
@@ -352,11 +271,7 @@ func PopulateReviews(db *gorm.DB, numData *int, args ...interface{}) error {
 		}
 
 		// Associate with a business or private party based on the random choice.
-		if isBusinessReviewer {
-			review.BusinessID = &businesses[gofakeit.Number(0, len(businesses)-1)].ID
-		} else {
-			review.PrivatePartyID = &privateParties[gofakeit.Number(0, len(privateParties)-1)].ID
-		}
+		review.BusinessID = &businesses[gofakeit.Number(0, len(businesses)-1)].ID
 
 		// Create the review in the database.
 		if err := db.Create(&review).Error; err != nil {
@@ -364,9 +279,9 @@ func PopulateReviews(db *gorm.DB, numData *int, args ...interface{}) error {
 		}
 
 		// Update the worker's rating after adding the review.
-		if err := repo.UpdateWorkerRating(db, worker.ID); err != nil {
-			return err
-		}
+		// if err := repo.UpdateWorkerRating(db, worker.ID); err != nil {
+		// 	return err
+		// }
 	}
 
 	return nil

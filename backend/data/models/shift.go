@@ -13,11 +13,12 @@ type Shift struct {
 	EmployerID   uint
 	Title        string
 	Description  string
-	Pay          float64
-	Address      Address `gorm:"embedded"`
+	PaymentRate  PaymentRate `gorm:"embedded"`
+	Address      Address     `gorm:"embedded"`
 	Status       string
 	IsRecurring  bool
-	Date         time.Time
+	StartDate    time.Time
+	EndDate      time.Time
 	WorkerShifts []WorkerShift
 }
 

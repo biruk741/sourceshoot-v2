@@ -85,5 +85,5 @@ func (r ReviewRepoInstance) UpdateWorkerRating(workerID uint) error {
 	}
 
 	// Update the worker's rating, considering potential NULL which means no rating yet
-	return r.db.Model(&Worker{}).Where("id = ?", workerID).UpdateColumn("rating", gorm.Expr("COALESCE(?, rating)", averageRating)).Error
+	return r.db.Model(&models.Worker{}).Where("id = ?", workerID).UpdateColumn("rating", gorm.Expr("COALESCE(?, rating)", averageRating)).Error
 }

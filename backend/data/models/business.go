@@ -10,12 +10,12 @@ import (
 
 type Business struct {
 	gorm.Model
-	FirebaseID     string     `gorm:"unique" json:"firebaseId"`
+	UserID         uint       `gorm:"unique" json:"userID"`
 	Email          string     `gorm:"type:varchar(255)" json:"email"`
 	PhoneNumber    string     `json:"phoneNumber"`
 	LastLogin      *time.Time `json:"lastLogin,omitempty"`
 	UserType       UserType   `json:"userType"`
-	ProfilePicture *string    `json:"profile_picture,omitempty"`
+	ProfilePicture *string    `json:"profilePicture,omitempty"`
 }
 
 func (u Business) RunMigration() error {

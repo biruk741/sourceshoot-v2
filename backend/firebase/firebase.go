@@ -29,8 +29,9 @@ func InitFirebase() error {
 		ProjectID: os.Getenv("FIREBASE_PROJECT_ID"),
 	}
 
+	creds := os.Getenv("FIREBASE_CREDENTIALS")
 	ctx := context.Background()
-	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CREDENTIALS")))
+	opt := option.WithCredentialsJSON([]byte(creds))
 	App, err = firebase.NewApp(ctx, config, opt)
 	if err != nil {
 		log.Fatalf("Error initializing Firebase app: %v\n", err)

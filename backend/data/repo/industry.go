@@ -27,7 +27,7 @@ func (r IndustryRepoInstance) CreateIndustry(industry models.Industry) (uint, er
 		return 0, err
 	}
 
-	return industry.IndustryID, nil
+	return industry.ID, nil
 }
 
 // GetAllIndustries retrieves all industries from the database.

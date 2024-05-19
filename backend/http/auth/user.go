@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"backend/data/models"
+	"backend/data/repo"
 	"backend/services"
 	serviceTypes "backend/services/types"
 )
@@ -18,7 +20,7 @@ type CreateFirebaseUserRequest struct {
 	FirebaseID string                `json:"firebaseID"`
 }
 
-func GetUserFromContext(c *gin.Context) (*serviceTypes.User, error) {
+func GetUserFromContext(c *gin.Context) (*models.User, error) {
 	firebaseID, ok := c.Get("firebaseID")
 	if !ok || firebaseID == nil || firebaseID == "" {
 		return nil, errors.New("user not found in context")
@@ -30,7 +32,7 @@ func GetUserFromContext(c *gin.Context) (*serviceTypes.User, error) {
 	}
 
 	// todo: use dependency injection
-	userService := services.NewUserService()
+	userService := services.NewUserService(repo.NewUserRepo())
 
 	return userService.GetUserByFirebaseID(idParsed)
 }

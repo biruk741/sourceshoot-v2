@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"backend/data/models"
 	"backend/data/repo"
 	serviceTypes "backend/services/types"
@@ -22,24 +20,19 @@ func NewSkillService(skillRepo repo.SkillRepo) *SkillInstance {
 }
 
 func (s *SkillInstance) GetSkills() ([]serviceTypes.Skill, error) {
-	skills, err := s.SkillRepo.GetSkillsFromDB()
-	if err != nil {
-		return nil, err
-	}
-	return ConvertGormSkillToService(skills)
+	return nil, nil
 }
 
 func ConvertGormSkillToService(s []models.Skill) ([]serviceTypes.Skill, error) {
 	skills := make([]serviceTypes.Skill, len(s))
 	for i, skill := range s {
-		empty := models.Industry{}
-		if skill.Industry == empty {
-			return []serviceTypes.Skill{}, fmt.Errorf("ConvertGormSkillToService: industry is empty")
-		}
+		// empty := models.Industry{}
+		// if skill.Industry == empty {
+		// 	return []serviceTypes.Skill{}, fmt.Errorf("ConvertGormSkillToService: industry is empty")
+		// }
 		_industry := serviceTypes.Industry{
-			IndustryID:   skill.Industry.IndustryID,
-			IndustryName: skill.Industry.IndustryName,
-			Description:  skill.Industry.Description,
+			IndustryID:   skill.Industry.ID,
+			IndustryName: skill.Industry.Name,
 		}
 		skills[i] = serviceTypes.Skill{
 			ID:          skill.Model.ID,

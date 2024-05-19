@@ -8,7 +8,6 @@ import (
 
 	http2 "backend/http/auth"
 	errors2 "backend/http/errors"
-	"backend/services"
 	serviceTypes "backend/services/types"
 )
 
@@ -46,8 +45,7 @@ func (h Handler) HandleGetLoggedInUser(c *gin.Context) {
 		return
 	}
 
-	userService := services.NewUserService()
-	res, err := userService.GetAppropriateLoggedInUser(*firebaseID)
+	res, err := h.UserService.GetAppropriateLoggedInUser(*firebaseID)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -63,22 +61,17 @@ func (h Handler) HandleFirebaseSignIn(c *gin.Context) {
 		return
 	}
 
-	userService := services.NewUserService()
-	err = userService.UpdateUserLastLogin(user.FirebaseID)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
+	// err = h.UserService.(user.FirebaseID)
+	// if err != nil {
+	// 	c.AbortWithError(http.StatusInternalServerError, err)
+	// 	return
+	// }
 
 	c.JSON(http.StatusOK, serviceTypes.User{
-		ID:             user.ID,
-		FirebaseID:     user.FirebaseID,
-		Email:          user.Email,
-		PhoneNumber:    user.PhoneNumber,
-		LastLogin:      user.LastLogin,
-		UserType:       user.UserType,
-		ProfilePicture: user.ProfilePicture,
-		Address:        user.Address,
+		FirebaseID:  user.FirebaseID,
+		Email:       user.Email,
+		PhoneNumber: user.PhoneNumber,
+		UserType:    user.UserType,
 	})
 }
 
@@ -101,9 +94,7 @@ func (h Handler) HandleFirebaseSignUp(c *gin.Context) {
 		return
 	}
 
-	userService := services.NewUserService()
-
-	userID, err := userService.CreateFirebaseUser(*firebaseID)
+	userID, err := h.UserService.CreateFirebaseUser(*firebaseID)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

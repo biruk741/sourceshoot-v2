@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"backend/data"
-	gormUser "backend/data/models"
+	"backend/data/models"
 )
 
-type UserType = gormUser.UserType
+type UserType = models.UserType
 
 type User struct {
 	ID             uint64       `json:"id"`
@@ -33,7 +33,7 @@ type CreateUserRequest struct {
 // For example, if the user type is worker, then the worker field will be populated
 // and the other fields will be nil
 type LoggedInUserResponse struct {
-	UserType UserType  `json:"userType"`
-	Business *Business `json:"business,omitempty"`
-	Worker   *Worker   `json:"worker,omitempty"`
+	UserType UserType         `json:"userType"`
+	Business *models.Business `json:"business,omitempty"`
+	Worker   *models.Worker   `json:"worker,omitempty"`
 }

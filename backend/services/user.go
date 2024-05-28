@@ -3,8 +3,6 @@ package services
 import (
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"backend/data/models"
 	"backend/data/repo"
@@ -15,14 +13,18 @@ type UserService interface {
 	CreateFirebaseUser(firebaseID string) (uint, error)
 	GetAppropriateLoggedInUser(firebaseID string) (*types.LoggedInUserResponse, error)
 	GetUserByFirebaseID(id string) (*models.User, error)
+	CreateUserFromAnswers(firebaseID string, answers []types.Answer) (interface{}, interface{})
 }
 
 type UserServiceInstance struct {
 	repo.UserRepo
+
+	// WorkerService is a service that provides methods to interact with the worker table in the database
+	WorkerService WorkerService
 }
 
-func NewUserService(userRepo repo.UserRepo) *UserServiceInstance {
-	s := UserServiceInstance{userRepo}
+func NewUserService(userRepo repo.UserRepo, workerService WorkerService) *UserServiceInstance {
+	s := UserServiceInstance{userRepo, workerService}
 	return &s
 }
 
@@ -48,32 +50,23 @@ func (s *UserServiceInstance) GetAppropriateLoggedInUser(firebaseID string) (*ty
 		return nil, errors.New("invalid user type")
 	}
 
-	// switch user.UserType {
-	// case models.USER_TYPE_WORKER:
-	// 	// Handle worker user type
-	// 	service := WorkerService.NewWorkerService()
-	// 	worker, err := service.GetWorkerByUserID(user.Model.ID)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("GetAppropriateLoggedInUser -> GetWorkerByUserIDinDB: %w", err)
-	// 	}
-	// 	res.Worker = &worker
-	// case models.USER_TYPE_BUSINESS:
-	// 	// Handle worker user type
-	// 	service := businessService.NewBusinessService()
-	// 	business, err := service.GetBusinessByUserID(user.Model.ID)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("GetAppropriateLoggedInUser -> GetBusinessByUserIDinDB: %w", err)
-	// 	}
-	// 	res.Business = &business
-	// case models.USER_TYPE_PRIVATE_PARTY:
-	// 	// Handle worker user type
-	// 	service := privatePartyService.NewPrivatePartyService()
-	// 	privateParty, err := service.GetPrivatePartyByUserID(user.Model.ID)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("GetAppropriateLoggedInUser -> GetPrivatePartyByUserIDinDB: %w", err)
-	// 	}
-	// 	res.PrivateParty = &privateParty
-	// }
+	switch user.UserType {
+	case models.USER_TYPE_WORKER:
+		// Handle worker user type
+		worker, err := s.WorkerService.GetWorkerByUserID(user.Model.ID)
+		if err != nil {
+			return nil, fmt.Errorf("GetAppropriateLoggedInUser -> GetWorkerByUserIDinDB: %w", err)
+		}
+		res.Worker = &worker
+	case models.USER_TYPE_BUSINESS:
+		// Handle worker user type
+		service := businessService.NewBusinessService()
+		business, err := service.GetBusinessByUserID(user.Model.ID)
+		if err != nil {
+			return nil, fmt.Errorf("GetAppropriateLoggedInUser -> GetBusinessByUserIDinDB: %w", err)
+		}
+		res.Business = &business
+	}
 
 	return &res, nil
 }
@@ -97,6 +90,40 @@ func (s *UserServiceInstance) UpdateUserLastLogin(firebaseID string) error {
 	return s.UserRepo.UpdateUserLastLoginInDB(firebaseID)
 }
 
+func (s *UserServiceInstance) CreateUserFromAnswers(firebaseID string, answers []types.Answer) (interface{}, interface{}) {
+	user, err := convertAnswersToUser(answers)
+	if err != nil {
+		return nil, err
+	}
+	user.FirebaseID = firebaseID
+	userID, err := s.CreateUserInDB(user)
+	if err != nil {
+		return nil, err
+	}
+	switch user.UserType {
+	case models.USER_TYPE_WORKER:
+		worker := models.Worker{
+			UserID: userID,
+		}
+		workerID, err := WorkerService.NewWorkerService().CreateWorker(worker)
+		if err != nil {
+			return nil, err
+		}
+		return workerID, nil
+	case models.USER_TYPE_BUSINESS:
+		business := models.Business{
+			UserID: userID,
+		}
+		businessID, err := businessService.NewBusinessService().CreateBusiness(business)
+		if err != nil {
+			return nil, err
+		}
+		return businessID, nil
+	default:
+		return nil, errors.New("invalid user type")
+	}
+}
+
 func convertAnswersToUser(answers []types.Answer) (models.User, error) {
 	var user models.User
 	for _, answer := range answers {
@@ -112,19 +139,6 @@ func convertAnswersToUser(answers []types.Answer) (models.User, error) {
 	return user, nil // todo return error if user is not valid
 }
 
-func stringToSliceOfInts(s string) ([]int, error) {
-	parts := strings.Split(s, ",")
-	var ints []int
-	for _, part := range parts {
-		i, err := strconv.Atoi(strings.TrimSpace(part))
-		if err != nil {
-			return nil, err
-		}
-		ints = append(ints, i)
-	}
-	return ints, nil
-}
-
 func convertUserTypeToEnum(answer string) models.UserType {
 	var enum models.UserType
 	switch answer {
@@ -138,13 +152,4 @@ func convertUserTypeToEnum(answer string) models.UserType {
 		enum = models.USER_TYPE_WORKER
 	}
 	return enum
-}
-
-func validateAnswers(answers []types.Answer) bool {
-	for _, answer := range answers {
-		if answer.Key == "" || answer.Answer == "" {
-			return false
-		}
-	}
-	return true
 }

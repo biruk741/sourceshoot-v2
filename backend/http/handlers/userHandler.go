@@ -2,40 +2,42 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	http2 "backend/http/auth"
 	errors2 "backend/http/errors"
+	"backend/services"
 	serviceTypes "backend/services/types"
 )
 
 func (h Handler) HandleCreateUser(c *gin.Context) {
-	// r := http2.CreateUserRequest{}
+	r := http2.CreateUserRequest{}
 
-	// firebaseID, err := http2.GetFirebaseIDFromContext(c)
-	// if err != nil {
-	// 	c.AbortWithError(http.StatusBadRequest, err)
-	// 	return
-	// }
-	//
-	// err = c.BindJSON(&r)
-	// if err != nil {
-	// 	c.AbortWithError(http.StatusBadRequest, err)
-	// 	fmt.Print(err)
-	// 	return
-	// }
-	//
-	// userService := services.NewUserService()
+	firebaseID, err := http2.GetFirebaseIDFromContext(c)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
-	// user, err := h.UserService.CreateUserFromAnswers(*firebaseID, r.Answers)
-	// if err != nil {
-	// 	c.AbortWithError(http.StatusInternalServerError, err)
-	// 	return
-	// }
+	err = c.BindJSON(&r)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		fmt.Print(err)
+		return
+	}
 
-	// c.JSON(http.StatusCreated, user)
+	userService := services.NewUserService()
+
+	user, err := h.UserService.CreateUserFromAnswers(*firebaseID, r.Answers)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, user)
 }
 
 func (h Handler) HandleGetLoggedInUser(c *gin.Context) {

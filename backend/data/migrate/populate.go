@@ -27,12 +27,12 @@ const (
 // Populate the database with mock data. The order of the functions in this array matters.
 var PopulationsAndAmounts = []PopulateFuncAndAmount{
 	{populateSkills, 15, nil},
-	{populateWorkers, 10, nil},
-	{populateUsers, 10, nil},
 	{populateIndustries, 20, nil},
-	{Func: populateBusinesses, Amount: 20},
-	{Func: PopulateReviews, Amount: 10},
-	{Func: PopulateShiftsForWorkerAndBusiness, Amount: 20, args: []interface{}{1, 3}},
+	// {populateWorkers, 10, nil},
+	// {populateUsers, 10, nil},
+	// {Func: populateBusinesses, Amount: 20},
+	// {Func: PopulateReviews, Amount: 10},
+	// {Func: PopulateShiftsForWorkerAndBusiness, Amount: 20, args: []interface{}{1, 3}},
 }
 
 func populateUsers(db *gorm.DB, numUsers *int, args ...interface{}) error {

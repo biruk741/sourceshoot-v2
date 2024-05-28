@@ -7,4 +7,5 @@ type Handler struct {
 	services.SkillsService
 	services.IndustryService
 	services.LocationService
+	services.WorkerService
 }

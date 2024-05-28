@@ -7,7 +7,7 @@ import (
 )
 
 type SkillsService interface {
-	GetSkills() ([]serviceTypes.Skill, error)
+	GetSkills() ([]models.Skill, error)
 }
 
 type SkillInstance struct {
@@ -19,8 +19,8 @@ func NewSkillService(skillRepo repo.SkillRepo) *SkillInstance {
 	return &s
 }
 
-func (s *SkillInstance) GetSkills() ([]serviceTypes.Skill, error) {
-	return nil, nil
+func (s *SkillInstance) GetSkills() ([]models.Skill, error) {
+	return s.SkillRepo.GetSkills()
 }
 
 func ConvertGormSkillToService(s []models.Skill) ([]serviceTypes.Skill, error) {

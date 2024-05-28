@@ -83,6 +83,7 @@ func InitRoutes() *gin.Engine {
 		userRepo     = repo.NewUserRepo()
 		skillRepo    = repo.NewSkillRepo()
 		industryRepo = repo.NewIndustryRepo()
+		workerRepo   = repo.NewWorkerRepo()
 		// reviewRepo   = repo.NewReviewRepo()
 	)
 
@@ -90,6 +91,7 @@ func InitRoutes() *gin.Engine {
 		userService     = services.NewUserService(userRepo)
 		skillService    = services.NewSkillService(skillRepo)
 		industryService = services.NewIndustryService(industryRepo)
+		workerService   = services.NewWorkerService(workerRepo)
 		// reviewService   = services.New
 	)
 
@@ -97,6 +99,7 @@ func InitRoutes() *gin.Engine {
 		UserService:     userService,
 		SkillsService:   skillService,
 		IndustryService: industryService,
+		WorkerService:   workerService,
 	}
 
 	v1 := router.Group("/v1")
